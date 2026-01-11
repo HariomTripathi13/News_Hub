@@ -103,8 +103,15 @@ def process_all_feeds():
                 try:
                     # [BOT MASKING]
                     config = Config()
-                    config.request_timeout = 10
-                    config.browser_user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.3'
+                    config.request_args = {''
+                    'headers': {
+                                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                                'referer': 'https://www.google.com',
+                                'Accept-Language': 'en-US,en;q=0.5',
+                                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+                                },
+                                'timeout': 15
+                            }
 
                     # [EXTRACTION]
                     article = Article(url, config=config)
