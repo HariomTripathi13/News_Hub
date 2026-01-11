@@ -1,0 +1,40 @@
+#1. Name: What appears on GitHub Actions tab
+name: Scheduler Workflow
+
+#2. Trigger: When to run the workflow
+on:
+  schedule:
+    - cron: '0 * * * *'  # Runs every hour at minute 0
+    
+  workflow_dispatch:  # Allows manual triggering
+
+#3. Jobs: Define the files to run
+jobs:
+  run_scripts:
+    runs-on: ubuntu-latest  # Use the latest Ubuntu runner(server)
+
+    # Checlist of steps to run within the job
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3  # Downloads the repository
+
+      - name: Set up Python
+        uses: actions/setup-python@v4  # Set up Python environment
+        with:
+          python-version: '3.11'  # Specify Python version
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt  # Install required packages
+
+      - name: Run Data Fetcher Script
+        env:
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}  # Securely pass DB password
+        run: python data_fetcher.py  # Fetches, Processes and Stores Data
+
+      - name: Run Cleanup Script
+        if: github.event.schedule == '0 3 * * *' || github.event_name == 'workflow_dispatch'  # Runs only at 3 AM
+        env:
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}  # Securely pass DB password
+        run: python janitor.py  # Deletes Old Data keeping the storage optimized
