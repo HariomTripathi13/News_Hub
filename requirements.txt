@@ -3,3 +3,4 @@ newspaper3k
 sentence-transformers
 psycopg2-binary
 scikit-learn
+lxml_html_clean
