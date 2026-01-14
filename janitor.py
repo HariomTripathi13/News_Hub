@@ -28,7 +28,7 @@ def janitor():
         #Creating the delete query
         delete_query = """
         delete from article
-        where published_at < NOW() - interval '30 days';
+        where created_at < NOW() - interval '30 days';
         """
 
         #Executing the delete query
