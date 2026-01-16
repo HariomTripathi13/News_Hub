@@ -45,7 +45,7 @@ def contains_hindi(text):
     (2) The Uni_Block code range for Hindi/Devnagri is U+0900 TO U+097F
     """
     for char in text:
-        if '\U+0900' <= char <= 'U+097f':
+        if '\u0900' <= char <= 'u097f':
             return True
     return False
 
