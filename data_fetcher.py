@@ -79,7 +79,7 @@ def process_all_feeds():
             feed = feedparser.parse(rss_url)
             print(f"   Found {len(feed.entries)} entries. Processing...")
 
-            for entry in feed.entries:  # Process top 50 entries
+            for entry in feed.entries[:50]:  # Process top 50 entries
 
                 # --- "MISSING DATA BUG" SAFEGAURD ---
                 url = getattr(entry, 'link', None)
