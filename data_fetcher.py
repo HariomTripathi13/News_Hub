@@ -120,6 +120,8 @@ def process_all_feeds():
                     
                     text_snippet = article.text[:1000]
                     image_url = article.top_image
+                    if len(text_snippet) < 200:
+                        continue
 
                     # [INTELLIGENCE]
                     full_content = f"{title}. {description}. {text_snippet}"
@@ -133,6 +135,7 @@ def process_all_feeds():
                     # Commit (Save) after every article so we don't lose progress if it crashes later
                     conn.commit()
                     total_articles += 1
+                    continue
 
                 except Exception as e:
                     print(f"   ⚠️ Skipping article: {e}")
