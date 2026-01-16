@@ -39,6 +39,16 @@ FEED_CONFIG = [
 print("🧠 Loading AI Model... (This takes a moment)")
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
+def contains_hindi(text):
+    """
+    (1) Checks is the text conatins Hindi or Devnagri characters.
+    (2) The Uni_Block code range for Hindi/Devnagri is U+0900 TO U+097F
+    """
+    for char in text:
+        if '\U+0900' <= char <= 'U+097f':
+            return True
+    return False
+
 # --- UPDATED DATABASE FUNCTION: ACCEPTS CURSOR ---
 def save_to_db(cur, title, url, description, content_snippet, published_at, source, image_url, embedding):
     try:
@@ -98,7 +108,7 @@ def process_all_feeds():
                     # Fallback to None (NULL in DB) if date is totally broken
                     published = None
 
-                description = getattr(entry, 'summary', '')
+                description = getattr(entry, 'summary', '') or ""
 
                 try:
                     # [BOT MASKING]
@@ -124,7 +134,13 @@ def process_all_feeds():
                         continue
 
                     # [INTELLIGENCE]
-                    full_content = f"{title}. {description}. {text_snippet}"
+                    vector_description = description
+                        # LANGUAGE CHECK
+                    if contains_hindi(description):
+                        print(f"Description is in Hindi, skipping Vectorization:{description[:20]}.....")
+                        vector_description = ""
+                        # VECTORIZATION
+                    full_content = f"{title}. {vector_description}. {text_snippet}"
                     vector = model.encode(full_content).tolist()
 
                     print(f"   ✅ [{source_name}] Saving: {title[:40]}...")
