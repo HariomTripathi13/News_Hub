@@ -8,6 +8,7 @@ import psycopg2
 from urllib.parse import quote_plus
 import os
 from newspaper import Config
+import re 
 
 # --- CONFIGURATION ---
 
@@ -39,6 +40,20 @@ FEED_CONFIG = [
 print("🧠 Loading AI Model... (This takes a moment)")
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
+# --- HTML cleaner ---
+def clean(text):
+    # Gaurd Clause: Empty string is not passed
+    if not text:
+        return ""
+    # Defining the pattern
+    cleanr = re.compile('<.*?>')
+    # Cleaning
+    cleantext = re.sub(cleanr, '', text)
+    # Removing ghost spaces
+    return cleantext.strip()
+    
+
+# --- Language Checker Function ---
 def contains_hindi(text):
     """
     (1) Checks is the text conatins Hindi or Devnagri characters.
@@ -93,13 +108,12 @@ def process_all_feeds():
 
                 # --- "MISSING DATA BUG" SAFEGAURD ---
                 url = getattr(entry, 'link', None)
-                title = getattr(entry, 'title', 'No Title Available') # Default if missing
-                
+                rss_title = getattr(entry, 'title', 'No Title Available') # Default if missing
                 if not url:
                     print("   ⚠️ Skipping: Entry has no URL")
                     continue
 
-                # --- DATE FORMATTING SAFETY ---
+                # --- DATE FORMATTING SAFETY FOR DATE/TIME ---
                 published = None
                 if hasattr(entry, 'published_parsed') and entry.published_parsed:
                     # Converts struct_time -> "2025-01-05 14:30:00"
@@ -108,12 +122,12 @@ def process_all_feeds():
                     # Fallback to None (NULL in DB) if date is totally broken
                     published = None
 
-                description = getattr(entry, 'summary', '') or ""
+                raw_description = getattr(entry, 'summary', '') or ""
 
                 try:
                     # [BOT MASKING]
                     config = Config()
-                    config.request_args = {''
+                    config.request_args = {
                     'headers': {
                                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
                                 'referer': 'https://www.google.com',
@@ -128,18 +142,35 @@ def process_all_feeds():
                     article.download()
                     article.parse()
                     
-                    text_snippet = article.text[:1000]
+                    # Title Failsafe
+                    scrapped_title = article.title
+                    if scrapped_title and len(scrapped_title) > 5:
+                        raw_title = scrapped_title
+                    else:
+                        print(f'⚠️ Scrapper failed to find a title, using RSS Fallback...')
+                        raw_title = rss_title
+
+                    raw_text_snippet = article.text[:1000]
                     image_url = article.top_image
+
+                    # [CLEAN-UP]
+                    title = clean(raw_title)
+                    text_snippet = clean(raw_text_snippet)
+                    description = clean(raw_description)
+                    
+                    # Minimum Word Limit
                     if len(text_snippet) < 200:
                         continue
 
                     # [INTELLIGENCE]
                     vector_description = description
-                        # LANGUAGE CHECK
+
+                    # LANGUAGE CHECK
                     if contains_hindi(description):
                         print(f"Description is in Hindi, skipping Vectorization:{description[:20]}.....")
                         vector_description = ""
-                        # VECTORIZATION
+
+                    # [VECTORIZATION]
                     full_content = f"{title}. {vector_description}. {text_snippet}"
                     vector = model.encode(full_content).tolist()
 
