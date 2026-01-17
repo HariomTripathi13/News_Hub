@@ -47,10 +47,17 @@ def clean(text):
         return ""
     # Defining the pattern
     cleanr = re.compile('<.*?>')
-    # Cleaning
-    cleantext = re.sub(cleanr, '', text)
+    # Cleaning HTML Tags
+    text = re.sub(cleanr, '', text)
+    # Removing Content Headers(Synopsis/Summary)
+    # SAFE REMOVAL: Only remove "Synopsis/Summary" if it is the first word
+    # r'^Synopsis/Summary' -> Look for Synopsis/Summary ONLY at the start
+    # \s* -> Also eat up any spaces immediately after it
+    # flags=re.IGNORECASE -> Catch 'Synopsis/Summary', 'synopsis/summary', 'SYNOPSIS/SUMMARY'
+    text = re.sub(r'^Synopsis\s*', '',  text, flags=re.IGNORECASE)
+    text = re.sub(r'^Summary\s*', '', text, flags=re.IGNORECASE)
     # Removing ghost spaces
-    return cleantext.strip()
+    return text.strip()
     
 
 # --- Language Checker Function ---
