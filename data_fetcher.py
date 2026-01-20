@@ -1,7 +1,6 @@
 import feedparser
 from newspaper import Article
 from sentence_transformers import SentenceTransformer
-import time
 from time import mktime
 from datetime import datetime
 import psycopg2
@@ -15,7 +14,7 @@ import re
 # 1. The PIN Secerecy
 db_pin = os.getenv("DB_PASSWORD")
 if not db_pin:
-    raise ValueError("❌ Error: Database password not found in environment variables.")
+    raise ValueError("Error: Database password not found in environment variables.")
 
 # 2. Password Encoding
 encoded_password = quote_plus(db_pin)
@@ -37,7 +36,7 @@ FEED_CONFIG = [
 ]
 
 # --- INITIALIZATION ---
-print("🧠 Loading AI Model... (This takes a moment)")
+print("Loading AI Model... (This takes a moment)")
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
 # --- HTML cleaner ---
@@ -83,7 +82,7 @@ def save_to_db(cur, title, url, description, content_snippet, published_at, sour
         cur.execute(query, (title, url, description, content_snippet, published_at, source, image_url, embedding))
         return True
     except Exception as e:
-        print(f"   ❌ Database Error: {e}")
+        print(f"Database Error: {e}")
         return False
 
 # --- MAIN PROCESSING FUNCTION ---
@@ -91,13 +90,13 @@ def process_all_feeds():
     total_articles = 0
     
     # --- FIX: OPENS CONNECTION ONCE (High Performance) ---
-    print("🔌 Connecting to Database...")
+    print("Connecting to Database...")
     try:
         conn = psycopg2.connect(DB_URI, sslmode='require')
         cur = conn.cursor()
-        print("✅ Connected to Supabase!")
+        print("Connected to Supabase!")
     except Exception as e:
-        print(f"❌ CRITICAL: Could not connect to DB. {e}")
+        print(f" !!! CRITICAL: Could not connect to DB. {e}")
         return
 
     # LOOP THROUGH FEEDS
@@ -105,7 +104,7 @@ def process_all_feeds():
         source_name = feed_info["source"]
         rss_url = feed_info["url"]
         
-        print(f"\n📡 Connecting to: {source_name}...")
+        print(f"\n Connecting to: {source_name}...")
         
         try:
             feed = feedparser.parse(rss_url)
@@ -117,7 +116,7 @@ def process_all_feeds():
                 url = getattr(entry, 'link', None)
                 rss_title = getattr(entry, 'title', 'No Title Available') # Default if missing
                 if not url:
-                    print("   ⚠️ Skipping: Entry has no URL")
+                    print("Skipping: Entry has no URL !!! ")
                     continue
 
                 # --- DATE FORMATTING SAFETY FOR DATE/TIME ---
@@ -154,7 +153,7 @@ def process_all_feeds():
                     if scrapped_title and len(scrapped_title) > 5:
                         raw_title = scrapped_title
                     else:
-                        print(f'⚠️ Scrapper failed to find a title, using RSS Fallback...')
+                        print(f' Scrapper failed to find a title, using RSS Fallback...')
                         raw_title = rss_title
 
                     raw_text_snippet = article.text[:1000]
@@ -181,7 +180,7 @@ def process_all_feeds():
                     full_content = f"{title}. {vector_description}. {text_snippet}"
                     vector = model.encode(full_content).tolist()
 
-                    print(f"   ✅ [{source_name}] Saving: {title[:40]}...")
+                    print(f"[{source_name}] Saving: {title[:40]}...")
                     
                     # [MEMORY] Pass 'cur' to the function
                     save_to_db(cur, title, url, description, text_snippet, published, source_name, image_url, vector)
@@ -192,16 +191,16 @@ def process_all_feeds():
                     continue
 
                 except Exception as e:
-                    print(f"   ⚠️ Skipping article: {e}")
+                    print(f" Skipping article: {e}")
                     continue
 
         except Exception as e:
-            print(f"❌ Failed to read feed {source_name}: {e}")
+            print(f" Failed to read feed {source_name}: {e}")
 
     # CLEAN UP
     cur.close()
     conn.close()     
-    print(f"\n🎉 DONE. Saved {total_articles} articles.")
+    print(f"\n DONE. Saved {total_articles} articles.")
 
 # --- RUNNING FETCHER SCRIPT ---
 if __name__ == "__main__":

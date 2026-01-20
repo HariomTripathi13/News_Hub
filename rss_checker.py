@@ -14,7 +14,7 @@ FEED_CONFIG = [
 ]
 
 # [SETUP] Load the AI Brain once
-print("🧠 Loading AI Model... (This takes a moment)")
+print("Loading AI Model... (This takes a moment)")
 model = SentenceTransformer('all-MiniLM-L6-v2')
     
 def process_all_feeds():
@@ -25,7 +25,7 @@ def process_all_feeds():
         source_name = feed_info["source"]
         rss_url = feed_info["url"]
         
-        print(f"\n📡 Connecting to: {source_name}...")
+        print(f"\n Connecting to: {source_name}...")
         
         try:
             feed = feedparser.parse(rss_url)
@@ -63,7 +63,7 @@ def process_all_feeds():
                     vector = model.encode(full_content_to_vectorize).tolist()
 
                     # [OUTPUT] (Simulating the Save)
-                    print(f"   ✅ [{source_name}] Vectorized: {title[:40]}...")
+                    print(f" [{source_name}] Vectorized: {title[:40]}...")
                     
                     # Here you would call your save_to_db function
                     # save_to_db(cur, title, url, description, text_snippet, published, source_name, image_url, vector)
@@ -71,13 +71,13 @@ def process_all_feeds():
                     total_articles += 1
 
                 except Exception as e:
-                    print(f"   ⚠️ Skipping article: {e}")
+                    print(f" Skipping article: {e}")
                     continue
 
         except Exception as e:
-            print(f"❌ Failed to read feed {source_name}: {e}")
+            print(f" Failed to read feed {source_name}: {e}")
             
-    print(f"\n🎉 DONE. Processed {total_articles} articles across {len(FEED_CONFIG)} sources.")
+    print(f"\n DONE. Processed {total_articles} articles across {len(FEED_CONFIG)} sources.")
 
 if __name__ == "__main__":
     process_all_feeds()

@@ -7,7 +7,7 @@ import os
 #1. The PIN Secerecy 
 db_pin = os.getenv("DB_PASSWORD")
 if not db_pin:
-    raise ValueError("❌ Error: Database password not found in environment variables.")
+    raise ValueError(" Error: Database password not found in environment variables.")
 
 # 2. Password Handling (Password Encoding)
 encoded_password = quote_plus(db_pin)
@@ -18,7 +18,7 @@ DB_URI = f"postgresql://postgres.furwcwgvvvziblenvhzc:{encoded_password}@aws-1-a
 # --- JANITOR FUNCTION TO DELETE OLD RECORDS ---
 
 def janitor():
-    print("🧹 Running Janitor Script to Clean Database...")
+    print(" Running Janitor Script to Clean Database...")
     conn = None
     try:
         #Connecting to the database
@@ -33,7 +33,7 @@ def janitor():
 
         #Executing the delete query
         cur.execute(delete_query)
-        print("✅ Old articles deleted successfully.")
+        print(" Old articles deleted successfully.")
 
         #Committing the changes
         conn.commit()
@@ -43,13 +43,13 @@ def janitor():
         cur.close()
 
     except Exception as e:
-        print(f"   ❌ Database Error during janitor operation: {e}")
+        print(f" Database Error during janitor operation: {e}")
     
     #Closing the connection
     finally:
         if conn:
             conn.close()
-            print("🔌 Database connection closed.")
+            print(" Database connection closed.")
 
 # --- RUNING JANITOR ---
 
