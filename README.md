@@ -29,7 +29,8 @@ The system operates on a fully automated "Serverless" architecture using GitHub 
 
 * **Ingestion:** Connects to RSS feeds and identifies new articles.
 * **Anti-Bot Bypass:** Uses a custom "Manual Override" strategy with rotated browser headers to legally access news content protected by standard bot filters.
-* **Processing:** Extracts the title, summary, source, and publication date.
+* **Hard-Coded Feed Limitation:** Hard coded limitaions to prevent one source from spamming articles in the database because of minor/minute updates by the source(Temporary).
+* **Pre-processing:** Extracts the title, summary, source, and publication date. Cleans the extracted data of any leftover html syntax, content headers and exclusion of content in unsupported languages.
 * **AI Enrichment:** Passes the article summary through a Transformer model to generate a **384-dimensional vector embedding**. This prepares the data for advanced semantic search and clustering (in development).
 * **Storage:** Saves structured data into Supabase (PostgreSQL), ensuring no duplicates via URL checking.
 
