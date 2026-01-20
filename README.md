@@ -91,7 +91,7 @@ python janitor.py
 * [x] PostgreSQL Integration (Supabase)
 * [x] AI Vector Embeddings Generation
 * [ ] **In Progress:** Clustering Engine (Grouping similar news topics)
-* [ ] **Next Step:** Frontend API Development
+* [ ] **Next Step:** Frontend Development & API Integration
 
 ---
 
