@@ -12,15 +12,9 @@ import re
 # --- CONFIGURATION ---
 
 # 1. The PIN Secerecy
-db_pin = os.getenv("DB_PASSWORD")
-if not db_pin:
+DB_URI = os.getenv("DB_PASSWORD")
+if not DB_URI:
     raise ValueError("Error: Database password not found in environment variables.")
-
-# 2. Password Encoding
-encoded_password = quote_plus(db_pin)
-
-# 3. Connection String (IPv4 Compatible & SSL)
-DB_URI = f"postgresql://postgres.furwcwgvvvziblenvhzc:{encoded_password}@aws-1-ap-south-1.pooler.supabase.com:6543/postgres?sslmode=require"
 
 # 4. RSS Feed List
 FEED_CONFIG = [
@@ -37,7 +31,12 @@ FEED_CONFIG = [
 
 # --- INITIALIZATION ---
 print("Loading AI Model... (This takes a moment)")
-model = SentenceTransformer('all-MiniLM-L6-v2')
+try:
+    # Checks local cache for model 
+    model = SentenceTransformer('all-MiniLM-L6-v2', local_files_only = True)
+except Exception:
+    # Load from Hugging_Face in case of empty cache
+    model = SentenceTransformer('all-MiniLM-L6-v2')
 
 # --- HTML cleaner ---
 def clean(text):

@@ -22,19 +22,30 @@ jobs:
         uses: actions/setup-python@v4  # Set up Python environment
         with:
           python-version: '3.11'  # Specify Python version
+          cache: 'pip'   # Caching
 
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt  # Install required packages
+          pyhton -c "import nltk; nltk.download('puntk', quiet =  True)"
+
+      - name: Cache AI Models and NLP data  #Multi-Caching (Model + NLTK)
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/huggingface
+            ~/nltk_data
+          key: ${{runner.os }}-ml-cache-
+
 
       - name: Run Data Fetcher Script
         env:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}  # Securely pass DB password
+          HF_HUBDOWNLOAD_TIMEOUT: 60   # Setting Timeout limits
         run: python data_fetcher.py  # Fetches, Processes and Stores Data
 
       - name: Run Cleanup Script
-        if: github.event.schedule == '0 3 * * *' || github.event_name == 'workflow_dispatch'  # Runs only at 3 AM
         env:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}  # Securely pass DB password
         run: python janitor.py  # Deletes Old Data keeping the storage optimized
